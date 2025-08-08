@@ -1,25 +1,5 @@
 // Trip-related type definitions
-
-export interface Trip {
-  id: string;
-  title: string;
-  description?: string;
-  destination?: string;
-  start_date?: string;
-  end_date?: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TripUser {
-  id: string;
-  trip_id: string;
-  user_id: string;
-  role: 'admin' | 'guest';
-  rsvp_status: 'pending' | 'accepted' | 'declined';
-  joined_at: string;
-}
+// Core Trip and TripUser types are now defined in database.ts
 
 export interface InviteToken {
   id: string;

@@ -1,11 +1,11 @@
 import { createBrowserClient } from '@supabase/ssr';
-// import { Database } from '@/lib/types/database'; // Will be created in later tasks
+import { Database } from '../types/database';
 
 /**
  * Supabase client for client-side components
  * Use this in React components, hooks, and client-side code
  */
-export const supabase = createBrowserClient(
+export const supabase = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
@@ -15,7 +15,7 @@ export const supabase = createBrowserClient(
  * Used when you need a fresh client instance
  */
 export function createClient() {
-  return createBrowserClient(
+  return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
