@@ -17,6 +17,11 @@ export interface Database {
         Insert: TripUserInsert;
         Update: TripUserUpdate;
       };
+      invite_tokens: {
+        Row: InviteToken;
+        Insert: InviteTokenInsert;
+        Update: InviteTokenUpdate;
+      };
     };
     Views: {
       [_ in never]: never;
@@ -126,6 +131,49 @@ export interface TripUserUpdate {
   nickname?: string | null;
 }
 
+// Invite Tokens table
+export interface InviteToken {
+  id: string;
+  token: string;
+  trip_id: string; // UUID reference to trips table
+  created_by: string; // UUID reference to auth.users
+  email: string | null; // Optional: specific email for targeted invites
+  max_uses: number; // How many times this token can be used
+  current_uses: number; // How many times it has been used
+  expires_at: string; // ISO timestamp
+  is_active: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface InviteTokenInsert {
+  id?: string;
+  token: string;
+  trip_id: string;
+  created_by: string;
+  email?: string | null;
+  max_uses?: number;
+  current_uses?: number;
+  expires_at: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface InviteTokenUpdate {
+  id?: string;
+  token?: string;
+  trip_id?: string;
+  created_by?: string;
+  email?: string | null;
+  max_uses?: number;
+  current_uses?: number;
+  expires_at?: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Utility types for common queries
 export type TripWithMembers = Trip & {
   trip_users: (TripUser & {
@@ -156,6 +204,34 @@ export type CreateTripData = Omit<TripInsert, 'created_by'>;
 
 // Helper type for trip membership status
 export type MembershipStatus = 'admin' | 'guest' | 'not_member';
+
+// Invite token utility types
+export type InviteTokenWithTrip = InviteToken & {
+  trip: {
+    id: string;
+    title: string;
+    destination: string;
+    start_date: string;
+    end_date: string;
+    status: Database['public']['Enums']['trip_status'];
+  };
+};
+
+export type ValidateInviteTokenResult = {
+  token_id: string;
+  trip_id: string;
+  trip_title: string;
+  trip_destination: string;
+  is_valid: boolean;
+  uses_remaining: number;
+  expires_at: string;
+};
+
+// Helper type for creating invite tokens
+export type CreateInviteTokenData = Omit<InviteTokenInsert, 'created_by' | 'created_at' | 'updated_at'>;
+
+// Helper type for invite token status
+export type InviteTokenStatus = 'active' | 'expired' | 'exhausted' | 'inactive';
 
 // Export the main Database type as default
 export type { Database as default };

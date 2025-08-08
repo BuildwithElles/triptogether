@@ -1,17 +1,6 @@
 // Trip-related type definitions
 // Core Trip and TripUser types are now defined in database.ts
-
-export interface InviteToken {
-  id: string;
-  trip_id: string;
-  token: string;
-  created_by: string;
-  expires_at: string;
-  max_uses?: number;
-  current_uses: number;
-  is_active: boolean;
-  created_at: string;
-}
+// InviteToken is also now defined in database.ts with the complete schema
 
 export interface ItineraryItem {
   id: string;
