@@ -22,6 +22,21 @@ export interface Database {
         Insert: InviteTokenInsert;
         Update: InviteTokenUpdate;
       };
+      itinerary_items: {
+        Row: ItineraryItem;
+        Insert: ItineraryItemInsert;
+        Update: ItineraryItemUpdate;
+      };
+      budget_items: {
+        Row: BudgetItem;
+        Insert: BudgetItemInsert;
+        Update: BudgetItemUpdate;
+      };
+      budget_splits: {
+        Row: BudgetSplit;
+        Insert: BudgetSplitInsert;
+        Update: BudgetSplitUpdate;
+      };
     };
     Views: {
       [_ in never]: never;
@@ -174,6 +189,132 @@ export interface InviteTokenUpdate {
   updated_at?: string;
 }
 
+// Itinerary Items table
+export interface ItineraryItem {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  title: string;
+  description: string | null;
+  location: string | null;
+  start_time: string | null; // ISO timestamp
+  end_time: string | null; // ISO timestamp
+  category: string;
+  created_by: string | null; // UUID reference to auth.users
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface ItineraryItemInsert {
+  id?: string;
+  trip_id: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  category?: string;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ItineraryItemUpdate {
+  id?: string;
+  trip_id?: string;
+  title?: string;
+  description?: string | null;
+  location?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  category?: string;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Budget Items table
+export interface BudgetItem {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  title: string;
+  description: string | null;
+  amount: number; // Decimal stored as number
+  currency: string;
+  category: string;
+  paid_by: string | null; // UUID reference to auth.users
+  split_type: 'equal' | 'custom' | 'percentage';
+  is_paid: boolean;
+  created_by: string | null; // UUID reference to auth.users
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface BudgetItemInsert {
+  id?: string;
+  trip_id: string;
+  title: string;
+  description?: string | null;
+  amount: number;
+  currency?: string;
+  category?: string;
+  paid_by?: string | null;
+  split_type?: 'equal' | 'custom' | 'percentage';
+  is_paid?: boolean;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BudgetItemUpdate {
+  id?: string;
+  trip_id?: string;
+  title?: string;
+  description?: string | null;
+  amount?: number;
+  currency?: string;
+  category?: string;
+  paid_by?: string | null;
+  split_type?: 'equal' | 'custom' | 'percentage';
+  is_paid?: boolean;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Budget Splits table
+export interface BudgetSplit {
+  id: string;
+  budget_item_id: string; // UUID reference to budget_items table
+  user_id: string; // UUID reference to auth.users
+  amount: number; // Decimal stored as number
+  percentage: number | null; // For percentage-based splits
+  is_paid: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface BudgetSplitInsert {
+  id?: string;
+  budget_item_id: string;
+  user_id: string;
+  amount: number;
+  percentage?: number | null;
+  is_paid?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BudgetSplitUpdate {
+  id?: string;
+  budget_item_id?: string;
+  user_id?: string;
+  amount?: number;
+  percentage?: number | null;
+  is_paid?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Utility types for common queries
 export type TripWithMembers = Trip & {
   trip_users: (TripUser & {
@@ -232,6 +373,70 @@ export type CreateInviteTokenData = Omit<InviteTokenInsert, 'created_by' | 'crea
 
 // Helper type for invite token status
 export type InviteTokenStatus = 'active' | 'expired' | 'exhausted' | 'inactive';
+
+// Feature table utility types
+export type ItineraryItemWithCreator = ItineraryItem & {
+  creator: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  } | null;
+};
+
+export type BudgetItemWithSplits = BudgetItem & {
+  splits: (BudgetSplit & {
+    user: {
+      id: string;
+      email: string;
+      user_metadata: {
+        full_name?: string;
+        avatar_url?: string;
+      };
+    };
+  })[];
+  creator: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  } | null;
+  payer: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  } | null;
+};
+
+export type BudgetSplitWithUser = BudgetSplit & {
+  user: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+  budget_item: BudgetItem;
+};
+
+// Helper types for creating new records
+export type CreateItineraryItemData = Omit<ItineraryItemInsert, 'created_by' | 'created_at' | 'updated_at'>;
+export type CreateBudgetItemData = Omit<BudgetItemInsert, 'created_by' | 'created_at' | 'updated_at'>;
+export type CreateBudgetSplitData = Omit<BudgetSplitInsert, 'created_at' | 'updated_at'>;
+
+// Helper types for common queries
+export type TripWithFeatures = Trip & {
+  itinerary_items: ItineraryItem[];
+  budget_items: BudgetItemWithSplits[];
+};
 
 // Export the main Database type as default
 export type { Database as default };
