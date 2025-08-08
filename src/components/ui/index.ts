@@ -1,3 +1,4 @@
 // UI Components barrel exports
-// ShadCN UI components will be added here
-export {};
+export * from './button';
+export * from './input';
+export * from './card';
