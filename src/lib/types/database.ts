@@ -37,6 +37,26 @@ export interface Database {
         Insert: BudgetSplitInsert;
         Update: BudgetSplitUpdate;
       };
+      packing_items: {
+        Row: PackingItem;
+        Insert: PackingItemInsert;
+        Update: PackingItemUpdate;
+      };
+      outfit_items: {
+        Row: OutfitItem;
+        Insert: OutfitItemInsert;
+        Update: OutfitItemUpdate;
+      };
+      messages: {
+        Row: Message;
+        Insert: MessageInsert;
+        Update: MessageUpdate;
+      };
+      photos: {
+        Row: Photo;
+        Insert: PhotoInsert;
+        Update: PhotoUpdate;
+      };
     };
     Views: {
       [_ in never]: never;
@@ -315,6 +335,229 @@ export interface BudgetSplitUpdate {
   updated_at?: string;
 }
 
+// Packing Items table
+export interface PackingItem {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  user_id: string; // UUID reference to auth.users
+  name: string;
+  description: string | null;
+  category: string;
+  quantity: number;
+  is_packed: boolean;
+  priority: 'low' | 'medium' | 'high' | 'essential';
+  is_shared: boolean;
+  shared_with: string[]; // Array of user UUIDs
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface PackingItemInsert {
+  id?: string;
+  trip_id: string;
+  user_id: string;
+  name: string;
+  description?: string | null;
+  category?: string;
+  quantity?: number;
+  is_packed?: boolean;
+  priority?: 'low' | 'medium' | 'high' | 'essential';
+  is_shared?: boolean;
+  shared_with?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PackingItemUpdate {
+  id?: string;
+  trip_id?: string;
+  user_id?: string;
+  name?: string;
+  description?: string | null;
+  category?: string;
+  quantity?: number;
+  is_packed?: boolean;
+  priority?: 'low' | 'medium' | 'high' | 'essential';
+  is_shared?: boolean;
+  shared_with?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Outfit Items table
+export interface OutfitItem {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  user_id: string; // UUID reference to auth.users
+  name: string;
+  description: string | null;
+  occasion: string;
+  weather: string | null;
+  date_planned: string | null; // ISO date string
+  clothing_items: any[]; // JSONB array of clothing pieces
+  image_url: string | null;
+  is_worn: boolean;
+  is_favorite: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface OutfitItemInsert {
+  id?: string;
+  trip_id: string;
+  user_id: string;
+  name: string;
+  description?: string | null;
+  occasion?: string;
+  weather?: string | null;
+  date_planned?: string | null;
+  clothing_items?: any[];
+  image_url?: string | null;
+  is_worn?: boolean;
+  is_favorite?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface OutfitItemUpdate {
+  id?: string;
+  trip_id?: string;
+  user_id?: string;
+  name?: string;
+  description?: string | null;
+  occasion?: string;
+  weather?: string | null;
+  date_planned?: string | null;
+  clothing_items?: any[];
+  image_url?: string | null;
+  is_worn?: boolean;
+  is_favorite?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Messages table
+export interface Message {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  user_id: string; // UUID reference to auth.users
+  content: string;
+  message_type: 'text' | 'image' | 'file' | 'system' | 'location';
+  reply_to: string | null; // UUID reference to messages table
+  attachments: any[]; // JSONB array of file metadata
+  is_edited: boolean;
+  edited_at: string | null; // ISO timestamp
+  is_pinned: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface MessageInsert {
+  id?: string;
+  trip_id: string;
+  user_id: string;
+  content: string;
+  message_type?: 'text' | 'image' | 'file' | 'system' | 'location';
+  reply_to?: string | null;
+  attachments?: any[];
+  is_edited?: boolean;
+  edited_at?: string | null;
+  is_pinned?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MessageUpdate {
+  id?: string;
+  trip_id?: string;
+  user_id?: string;
+  content?: string;
+  message_type?: 'text' | 'image' | 'file' | 'system' | 'location';
+  reply_to?: string | null;
+  attachments?: any[];
+  is_edited?: boolean;
+  edited_at?: string | null;
+  is_pinned?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Photos table
+export interface Photo {
+  id: string;
+  trip_id: string; // UUID reference to trips table
+  uploaded_by: string; // UUID reference to auth.users
+  title: string | null;
+  description: string | null;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  taken_at: string | null; // ISO timestamp
+  location_name: string | null;
+  latitude: number | null; // Decimal stored as number
+  longitude: number | null; // Decimal stored as number
+  album_name: string | null;
+  tags: string[]; // Array of tag strings
+  is_favorite: boolean;
+  is_cover_photo: boolean;
+  is_public: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface PhotoInsert {
+  id?: string;
+  trip_id: string;
+  uploaded_by: string;
+  title?: string | null;
+  description?: string | null;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
+  width?: number | null;
+  height?: number | null;
+  taken_at?: string | null;
+  location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  album_name?: string | null;
+  tags?: string[];
+  is_favorite?: boolean;
+  is_cover_photo?: boolean;
+  is_public?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PhotoUpdate {
+  id?: string;
+  trip_id?: string;
+  uploaded_by?: string;
+  title?: string | null;
+  description?: string | null;
+  file_name?: string;
+  file_path?: string;
+  file_size?: number;
+  mime_type?: string;
+  width?: number | null;
+  height?: number | null;
+  taken_at?: string | null;
+  location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  album_name?: string | null;
+  tags?: string[];
+  is_favorite?: boolean;
+  is_cover_photo?: boolean;
+  is_public?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Utility types for common queries
 export type TripWithMembers = Trip & {
   trip_users: (TripUser & {
@@ -431,11 +674,102 @@ export type BudgetSplitWithUser = BudgetSplit & {
 export type CreateItineraryItemData = Omit<ItineraryItemInsert, 'created_by' | 'created_at' | 'updated_at'>;
 export type CreateBudgetItemData = Omit<BudgetItemInsert, 'created_by' | 'created_at' | 'updated_at'>;
 export type CreateBudgetSplitData = Omit<BudgetSplitInsert, 'created_at' | 'updated_at'>;
+export type CreatePackingItemData = Omit<PackingItemInsert, 'created_at' | 'updated_at'>;
+export type CreateOutfitItemData = Omit<OutfitItemInsert, 'created_at' | 'updated_at'>;
+export type CreateMessageData = Omit<MessageInsert, 'created_at' | 'updated_at'>;
+export type CreatePhotoData = Omit<PhotoInsert, 'created_at' | 'updated_at'>;
 
 // Helper types for common queries
 export type TripWithFeatures = Trip & {
   itinerary_items: ItineraryItem[];
   budget_items: BudgetItemWithSplits[];
+  packing_items: PackingItemWithUser[];
+  outfit_items: OutfitItemWithUser[];
+  messages: MessageWithUser[];
+  photos: PhotoWithUploader[];
+};
+
+// Additional utility types for new tables
+export type PackingItemWithUser = PackingItem & {
+  user: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+};
+
+export type OutfitItemWithUser = OutfitItem & {
+  user: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+};
+
+export type MessageWithUser = Message & {
+  user: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+  reply_to_message?: MessageWithUser | null;
+};
+
+export type PhotoWithUploader = Photo & {
+  uploader: {
+    id: string;
+    email: string;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+};
+
+// Chat-specific types
+export type MessageThread = MessageWithUser & {
+  replies: MessageWithUser[];
+  reply_count: number;
+};
+
+// Photo gallery types
+export type PhotoAlbum = {
+  album_name: string;
+  photos: PhotoWithUploader[];
+  photo_count: number;
+  cover_photo?: PhotoWithUploader;
+};
+
+// Clothing item type for outfits
+export type ClothingItem = {
+  id: string;
+  name: string;
+  type: 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory';
+  color: string;
+  brand?: string;
+  notes?: string;
+};
+
+// Packing category types
+export type PackingCategory = 'clothing' | 'toiletries' | 'electronics' | 'documents' | 'medicine' | 'entertainment' | 'general';
+
+// Message attachment type
+export type MessageAttachment = {
+  id: string;
+  file_name: string;
+  file_url: string;
+  file_size: number;
+  mime_type: string;
+  upload_date: string;
 };
 
 // Export the main Database type as default
