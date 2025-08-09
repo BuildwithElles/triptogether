@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import TripHeader from '@/components/trip/TripHeader';
 import MembersList from '@/components/trip/MembersList';
+import { InviteLink } from '@/components/trip/InviteLink';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 interface TripMember {
@@ -58,6 +59,7 @@ const TripDashboard: React.FC = () => {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     if (!tripId || !user) return;
@@ -122,8 +124,7 @@ const TripDashboard: React.FC = () => {
   };
 
   const handleInviteMembers = () => {
-    // TODO: Implement invite members functionality
-    console.log('Invite members to trip:', trip?.id);
+    setShowInviteModal(true);
   };
 
   const handleManageMember = (member: TripMember) => {
@@ -312,6 +313,30 @@ const TripDashboard: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Invite Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Invite Members</h2>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowInviteModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </Button>
+                </div>
+                <InviteLink
+                  tripId={trip.id}
+                  isAdmin={trip.userRole === 'admin'}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
