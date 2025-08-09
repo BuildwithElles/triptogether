@@ -308,196 +308,239 @@ A granular task breakdown for building the collaborative trip planning applicati
 - **Rollback**: Show static trip data instead of dynamic
 - **Estimated time**: 25 minutes
 
-### Task 20: Build Individual Trip Dashboard
-- **Objective**: Create the main trip view with basic information
-- **Files to modify/create**: 
-  - `src/app/(dashboard)/trips/[tripId]/page.tsx`
-  - `src/components/trip/TripHeader.tsx`
-  - `src/components/trip/MembersList.tsx`
-  - `src/app/api/trips/[tripId]/route.ts`
-- **Acceptance Criteria**: 
-  - Trip dashboard shows trip details
-  - Members list displays all participants
-  - Role indicators (admin/guest) visible
-  - Trip navigation tabs present
-  - 404 handling for invalid trip IDs
-- **Dependencies**: Task 19
-- **Rollback**: Show basic trip info without member details
-- **Estimated time**: 30 minutes
+**Task 20: Build Individual Trip Dashboard**
+- **Objective**: Create the main trip dashboard page with trip details, members list, and navigation tabs.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/page.tsx`  
+  - `src/components/trip/TripHeader.tsx`  
+  - `src/components/trip/MembersList.tsx`  
+  - `src/app/api/trips/[tripId]/route.ts`  
+- **Acceptance Criteria**:  
+  - Trip details display correctly (title, destination, dates).  
+  - Members list shows all participants with role indicators (admin/guest).  
+  - Navigation tabs visible for itinerary, budget, packing, chat, gallery, outfits.  
+  - Invalid `tripId` returns a 404 page.  
+- **Dependencies**: Task 19 completed.  
+- **Rollback**: Revert the new files and changes using `git checkout` to last commit before task.  
+- **Estimated time**: 25 minutes  
 
-### Task 21: Implement Invite Link Generation
-- **Objective**: Build invite system for adding trip members
-- **Files to modify/create**: 
-  - `src/app/api/trips/[tripId]/invite/route.ts`
-  - `src/components/trip/InviteLink.tsx`
-  - `src/lib/utils/invite.ts`
-- **Acceptance Criteria**: 
-  - Admin can generate invite links
-  - Links have expiration dates
-  - Usage limits configurable
-  - Copy-to-clipboard functionality
-  - Invite link validation
-- **Dependencies**: Task 20
-- **Rollback**: Remove invite functionality, manual member addition only
-- **Estimated time**: 25 minutes
+**Task 21: Implement Invite Link Generation**
+- **Objective**: Allow admins to generate invite links with expiry and usage limits.
+- **Files to modify/create**:  
+  - `src/app/api/trips/[tripId]/invite/route.ts`  
+  - `src/components/trip/InviteLink.tsx`  
+  - `src/lib/utils/invite.ts`  
+- **Acceptance Criteria**:  
+  - Admin can click “Generate Invite” to create a link.  
+  - Link includes expiration date and usage limit.  
+  - Copy-to-clipboard works.  
+  - Backend enforces expiry and usage limits.  
+- **Dependencies**: Task 20 completed.  
+- **Rollback**: Remove `InviteLink` component and API route; restore database to remove test invites.  
+- **Estimated time**: 20 minutes  
 
-### Task 22: Create Invite Preview and Join Flow
-- **Objective**: Build public invite preview and trip joining process
-- **Files to modify/create**: 
-  - `src/app/invite/[token]/preview/page.tsx`
-  - `src/app/invite/[token]/join/page.tsx`
-  - `src/components/invite/InvitePreview.tsx`
-  - `src/app/api/invite/[token]/route.ts`
-- **Acceptance Criteria**: 
-  - Public invite preview shows trip details
-  - Join flow works for authenticated users
-  - Expired/invalid invites handled gracefully
-  - Users redirected to trip after joining
-  - Invite usage tracking works
-- **Dependencies**: Task 21
-- **Rollback**: Remove public invite pages, use direct member addition
-- **Estimated time**: 30 minutes
+**Task 22: Create Invite Preview and Join Flow**
+- **Objective**: Build public preview page for invites and allow users to join trips.
+- **Files to modify/create**:  
+  - `src/app/invite/[token]/preview/page.tsx`  
+  - `src/app/invite/[token]/join/page.tsx`  
+  - `src/components/invite/InvitePreview.tsx`  
+  - `src/app/api/invite/[token]/route.ts`  
+- **Acceptance Criteria**:  
+  - Invite preview shows trip info.  
+  - Authenticated users can join directly; unauthenticated users are prompted to log in.  
+  - Expired/invalid invites show error page.  
+  - Invite usage tracking updates correctly.  
+- **Dependencies**: Task 21 completed.  
+- **Rollback**: Remove invite pages and API route; delete test invite tokens.  
+- **Estimated time**: 30 minutes  
 
-### Task 23: Build Basic Itinerary Management
-- **Objective**: Create itinerary CRUD functionality
-- **Files to modify/create**: 
-  - `src/app/(dashboard)/trips/[tripId]/itinerary/page.tsx`
-  - `src/app/api/trips/[tripId]/itinerary/route.ts`
-  - `src/components/itinerary/ItineraryList.tsx`
-  - `src/components/itinerary/AddItineraryItem.tsx`
-  - `src/lib/hooks/useItinerary.ts`
-- **Acceptance Criteria**: 
-  - List view of itinerary items
-  - Add new itinerary items with form
-  - Edit existing items inline
-  - Delete items with confirmation
-  - Items sorted by date/time
-- **Dependencies**: Task 22
-- **Rollback**: Show static itinerary data
-- **Estimated time**: 30 minutes
+**Task 23: Build Basic Itinerary Management**
+- **Objective**: CRUD operations for itinerary items.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/itinerary/page.tsx`  
+  - `src/app/api/trips/[tripId]/itinerary/route.ts`  
+  - `src/components/itinerary/ItineraryList.tsx`  
+  - `src/components/itinerary/AddItineraryItem.tsx`  
+  - `src/lib/hooks/useItinerary.ts`  
+- **Acceptance Criteria**:  
+  - List view displays items sorted by start date/time.  
+  - Can add, edit, delete items with confirmation.  
+  - Validations for required fields (title, date).  
+- **Dependencies**: Task 22 completed.  
+- **Rollback**: Remove itinerary components and API route.  
+- **Estimated time**: 30 minutes  
 
-### Task 24: Implement Basic Budget Tracking
-- **Objective**: Create budget management with expense tracking
-- **Files to modify/create**: 
-  - `src/app/(dashboard)/trips/[tripId]/budget/page.tsx`
-  - `src/app/api/trips/[tripId]/budget/route.ts`
-  - `src/components/budget/BudgetTracker.tsx`
-  - `src/components/budget/AddExpense.tsx`
-  - `src/lib/hooks/useBudget.ts`
-- **Acceptance Criteria**: 
-  - Add expenses with amount and category
-  - View total trip budget
-  - Basic expense splitting (equal shares)
-  - Mark expenses as paid/unpaid
-  - Budget summary calculations
-- **Dependencies**: Task 23
-- **Rollback**: Show static budget information
-- **Estimated time**: 30 minutes
+**Task 24: Implement Basic Budget Tracking**
+- **Objective**: Add trip expense tracking with equal splitting.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/budget/page.tsx`  
+  - `src/app/api/trips/[tripId]/budget/route.ts`  
+  - `src/components/budget/BudgetTracker.tsx`  
+  - `src/components/budget/AddExpense.tsx`  
+  - `src/lib/hooks/useBudget.ts`  
+- **Acceptance Criteria**:  
+  - Add expenses with amount and category.  
+  - Show total budget and per-person equal split.  
+  - Mark expenses as paid/unpaid.  
+- **Dependencies**: Task 23 completed.  
+- **Rollback**: Remove budget components and API route; drop test budget rows from DB.  
+- **Estimated time**: 25 minutes  
 
-### Task 25: Create Basic Packing List Feature
-- **Objective**: Build personal packing list management
-- **Files to modify/create**: 
-  - `src/app/(dashboard)/trips/[tripId]/packing/page.tsx`
-  - `src/app/api/trips/[tripId]/packing/route.ts`
-  - `src/components/packing/PackingList.tsx`
-  - `src/components/packing/AddPackingItem.tsx`
-  - `src/lib/hooks/usePacking.ts`
-- **Acceptance Criteria**: 
-  - Personal packing lists for each user
-  - Add/remove packing items
-  - Mark items as packed/unpacked
-  - Category organization (clothes, toiletries, etc.)
-  - Progress indicator for packing completion
-- **Dependencies**: Task 24
-- **Rollback**: Remove packing feature, focus on core trip planning
-- **Estimated time**: 25 minutes
+**Task 25: Create Basic Packing List Feature**
+- **Objective**: Personal packing list per user with categories and progress tracking.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/packing/page.tsx`  
+  - `src/app/api/trips/[tripId]/packing/route.ts`  
+  - `src/components/packing/PackingList.tsx`  
+  - `src/components/packing/AddPackingItem.tsx`  
+  - `src/lib/hooks/usePacking.ts`  
+- **Acceptance Criteria**:  
+  - Add/remove items.  
+  - Mark items as packed/unpacked.  
+  - Show packing completion progress.  
+- **Dependencies**: Task 24 completed.  
+- **Rollback**: Remove packing components and API route; delete test packing items from DB.  
+- **Estimated time**: 25 minutes  
 
-## Phase 5: Polish Phase (Error Handling & UX Improvements)
+**Task 26: Implement Trip Chat (Realtime Messaging)**
+- **Objective**: Group chat using `messages` table and Supabase Realtime.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/chat/page.tsx`  
+  - `src/components/chat/ChatRoom.tsx`  
+  - `src/components/chat/MessageList.tsx`  
+  - `src/components/chat/MessageInput.tsx`  
+  - `src/lib/hooks/useChat.ts`  
+- **Acceptance Criteria**:  
+  - Send, edit, delete messages.  
+  - Messages appear instantly via realtime subscription.  
+  - Support file attachments (optional).  
+- **Dependencies**: Task 25 completed.  
+- **Rollback**: Remove chat components and API usage; disable Supabase realtime on `messages` table.  
+- **Estimated time**: 30 minutes  
 
-### Task 26: Implement Global Error Handling
-- **Objective**: Add comprehensive error handling and user feedback
-- **Files to modify/create**: 
-  - `src/app/error.tsx`
-  - `src/app/not-found.tsx`
-  - `src/components/common/ErrorBoundary.tsx`
-  - `src/lib/context/ToastContext.tsx`
-  - `src/lib/utils/error-tracking.ts`
-- **Acceptance Criteria**: 
-  - Global error boundary catches React errors
-  - 404 page for missing routes
-  - Toast notifications for user actions
-  - Error logging for debugging
-  - Graceful degradation on failures
-- **Dependencies**: Task 25
-- **Rollback**: Remove error handling, use browser defaults
-- **Estimated time**: 25 minutes
+**Task 27: Build Photo Gallery**
+- **Objective**: Upload and display trip photos from `trip-photos` bucket.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/gallery/page.tsx`  
+  - `src/components/gallery/PhotoGallery.tsx`  
+  - `src/components/gallery/PhotoUpload.tsx`  
+  - `src/components/gallery/PhotoGrid.tsx`  
+  - `src/lib/hooks/useGallery.ts`  
+- **Acceptance Criteria**:  
+  - Upload, view, and delete photos.  
+  - Group into albums; display captions/metadata.  
+- **Dependencies**: Task 26 completed.  
+- **Rollback**: Remove gallery components; delete test images from bucket.  
+- **Estimated time**: 25 minutes  
 
-### Task 27: Add Loading States and Optimistic Updates
-- **Objective**: Improve UX with loading indicators and optimistic updates
-- **Files to modify/create**: 
-  - `src/app/(dashboard)/loading.tsx`
-  - `src/components/common/LoadingSpinner.tsx`
-  - Updated hooks with optimistic updates
-  - Skeleton components for loading states
-- **Acceptance Criteria**: 
-  - Loading spinners during data fetching
-  - Skeleton screens for content areas
-  - Optimistic updates for user actions
-  - Smooth transitions between states
-  - No jarring loading experiences
-- **Dependencies**: Task 26
-- **Rollback**: Remove loading states, show content immediately
-- **Estimated time**: 20 minutes
+**Task 28: Implement Outfit Planner**
+- **Objective**: CRUD for outfits with optional weather integration.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/trips/[tripId]/outfits/page.tsx`  
+  - `src/components/outfits/OutfitPlanner.tsx`  
+  - `src/components/outfits/AddOutfit.tsx`  
+  - `src/components/outfits/OutfitCalendar.tsx`  
+  - `src/lib/hooks/useOutfits.ts`  
+- **Acceptance Criteria**:  
+  - Add/edit/delete outfits.  
+  - Calendar view displays outfits per day.  
+  - Weather API suggestions visible if API key set.  
+- **Dependencies**: Task 27 completed.  
+- **Rollback**: Remove outfit components; delete test outfits from DB.  
+- **Estimated time**: 30 minutes  
 
-### Task 28: Implement Form Validation and User Feedback
-- **Objective**: Add comprehensive form validation with clear error messages
-- **Files to modify/create**: 
-  - Updated validation schemas in `src/lib/utils/validation.ts`
-  - Enhanced form components with validation
-  - `src/components/ui/form.tsx` improvements
-- **Acceptance Criteria**: 
-  - All forms have client-side validation
-  - Clear error messages for validation failures
-  - Success feedback for completed actions
-  - Disabled states during form submission
-  - Consistent validation patterns across app
-- **Dependencies**: Task 27
-- **Rollback**: Use basic HTML5 validation only
-- **Estimated time**: 25 minutes
+**Task 29: Enable Supabase Realtime Sync Across Features**
+- **Objective**: Add realtime updates to itinerary, budget, packing, chat, and gallery.
+- **Files to modify/create**:  
+  - Update relevant `useItinerary.ts`, `useBudget.ts`, `usePacking.ts`, `useChat.ts`, `useGallery.ts`.  
+- **Acceptance Criteria**:  
+  - Any changes in DB are reflected live in UI without refresh.  
+  - No duplicate or stale data in state.  
+- **Dependencies**: Task 28 completed.  
+- **Rollback**: Remove realtime subscriptions from hooks; revert to SWR polling.  
+- **Estimated time**: 20 minutes  
 
-### Task 29: Add Responsive Design Polish
-- **Objective**: Ensure excellent mobile experience and responsive design
-- **Files to modify/create**: 
-  - Mobile-optimized components
-  - Responsive navigation improvements
-  - Touch-friendly interactions
-  - Updated Tailwind breakpoints
-- **Acceptance Criteria**: 
-  - App works well on mobile devices (320px+)
-  - Touch targets are appropriately sized
-  - Navigation adapts to screen size
-  - Content is readable on all devices
-  - No horizontal scrolling on mobile
-- **Dependencies**: Task 28
-- **Rollback**: Keep desktop-focused design
-- **Estimated time**: 30 minutes
+---
 
-### Task 30: Final Testing and Bug Fixes
-- **Objective**: Comprehensive testing and bug fixing for MVP release
-- **Files to modify/create**: 
-  - Bug fixes across all components
-  - Performance optimizations
-  - Final UX polish
-  - Documentation updates
-- **Acceptance Criteria**: 
-  - All core user flows work end-to-end
-  - No critical bugs or broken functionality
-  - Performance is acceptable on target devices
-  - App is ready for user testing
-  - Basic documentation is complete
-- **Dependencies**: Task 29
-- **Rollback**: Revert to last stable state
-- **Estimated time**: 30 minutes
+## Polish Phase (Error Handling, UX Improvements, Testing)
+
+**Task 30: Implement Global Error Handling**
+- **Objective**: Add app-wide error boundaries, 404 page, toast notifications, and error logging.
+- **Files to modify/create**:  
+  - `src/app/error.tsx`  
+  - `src/app/not-found.tsx`  
+  - `src/components/common/ErrorBoundary.tsx`  
+  - `src/lib/context/ToastContext.tsx`  
+  - `src/lib/utils/error-tracking.ts`  
+- **Acceptance Criteria**:  
+  - 404 page appears for missing routes.  
+  - Errors in components are caught and logged.  
+  - Toast notifications for errors and successes.  
+- **Dependencies**: Task 29 completed.  
+- **Rollback**: Remove error handling components; revert to default Next.js error pages.  
+- **Estimated time**: 25 minutes  
+
+**Task 31: Add Loading States and Optimistic Updates**
+- **Objective**: Improve UX with skeleton screens, spinners, and optimistic UI.
+- **Files to modify/create**:  
+  - `src/app/(dashboard)/loading.tsx`  
+  - `src/components/common/LoadingSpinner.tsx`  
+  - Skeleton components for dashboard and trip pages.  
+- **Acceptance Criteria**:  
+  - Loading spinners appear during data fetch.  
+  - Optimistic updates show immediate UI changes before server response.  
+- **Dependencies**: Task 30 completed.  
+- **Rollback**: Remove skeleton components and optimistic logic.  
+- **Estimated time**: 20 minutes  
+
+**Task 32: Implement Comprehensive Form Validation and User Feedback**
+- **Objective**: Standardize form validation with Zod schemas and consistent feedback.
+- **Files to modify/create**:  
+  - Update `src/lib/utils/validation.ts`  
+  - Enhance all form components with validation messages.  
+- **Acceptance Criteria**:  
+  - All forms have client-side validation.  
+  - Clear error and success messages displayed.  
+- **Dependencies**: Task 31 completed.  
+- **Rollback**: Revert validation logic to HTML5 defaults.  
+- **Estimated time**: 25 minutes  
+
+**Task 33: Add Responsive Design Polish**
+- **Objective**: Ensure app works perfectly on all screen sizes.
+- **Files to modify/create**:  
+  - Adjust Tailwind breakpoints in `tailwind.config.js`  
+  - Update navigation and grid layouts for mobile/tablet.  
+- **Acceptance Criteria**:  
+  - No horizontal scrolling on mobile.  
+  - All components are touch-friendly.  
+- **Dependencies**: Task 32 completed.  
+- **Rollback**: Revert CSS and layout changes.  
+- **Estimated time**: 30 minutes  
+
+**Task 34: Implement Automated E2E Testing**
+- **Objective**: Configure Playwright to test all core flows in CI.
+- **Files to modify/create**:  
+  - `playwright.config.ts`  
+  - Tests in `tests/playwright/` for auth, trips, itinerary, budget, chat.  
+  - GitHub Actions workflow for CI test runs.  
+- **Acceptance Criteria**:  
+  - All E2E tests pass locally and in CI pipeline.  
+- **Dependencies**: Task 33 completed.  
+- **Rollback**: Remove test files and workflow config.  
+- **Estimated time**: 30 minutes  
+
+**Task 35: Final Bug Fixes and Performance Optimizations**
+- **Objective**: Resolve critical bugs and optimize app load times.
+- **Files to modify/create**:  
+  - Various bug fix commits across components.  
+  - Performance tweaks (lazy loading, image optimization).  
+- **Acceptance Criteria**:  
+  - No known critical bugs.  
+  - App meets acceptable performance benchmarks (Lighthouse ≥ 90).  
+- **Dependencies**: Task 34 completed.  
+- **Rollback**: Revert performance changes causing instability.  
+- **Estimated time**: 25 minutes 
 
 ---
 

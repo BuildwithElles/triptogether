@@ -7,3 +7,8 @@ export {
   useAuthUser,
   type UseAuthReturn,
 } from './useAuth'
+
+export {
+  useTrips,
+  useCreateTrip,
+} from './useTrips'
