@@ -25,6 +25,24 @@ export default function Home() {
           <p className="text-xs text-blue-600 mt-1">
             Task #13: Authentication Context is working! 🎉
           </p>
+          
+          {/* Auth Navigation Links */}
+          <div className="mt-3 space-x-2">
+            {!isAuthenticated ? (
+              <>
+                <Button asChild size="sm" variant="outline">
+                  <a href="/login">Login</a>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <a href="/signup">Sign Up</a>
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm" variant="outline">
+                <a href="/dashboard">Dashboard</a>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

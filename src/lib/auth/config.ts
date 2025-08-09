@@ -90,7 +90,7 @@ export function getAuthRedirectUrl(path: string): string {
 }
 
 // Helper function to validate password strength
-export function validatePassword(password: string): {
+export function validatePasswordStrength(password: string): {
   isValid: boolean
   errors: string[]
 } {
@@ -123,7 +123,7 @@ export function validatePassword(password: string): {
 }
 
 // Helper function to validate email format
-export function validateEmail(email: string): boolean {
+export function validateEmailFormat(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
