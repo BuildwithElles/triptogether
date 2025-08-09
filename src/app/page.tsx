@@ -1,13 +1,31 @@
+'use client'
+
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { useAuth } from "../lib/hooks"
 
 export default function Home() {
+  const { loading, isAuthenticated, error } = useAuth()
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Hello TripTogether</h1>
         <p className="text-muted-foreground">Testing ShadCN UI Components</p>
+        
+        {/* Auth Status Indicator */}
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm font-medium text-blue-800">
+            Auth Status: {loading ? '⏳ Loading...' : isAuthenticated ? '✅ Authenticated' : '🔒 Not Authenticated'}
+          </p>
+          {error && (
+            <p className="text-sm text-red-600 mt-1">Error: {error}</p>
+          )}
+          <p className="text-xs text-blue-600 mt-1">
+            Task #13: Authentication Context is working! 🎉
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-4xl w-full">
