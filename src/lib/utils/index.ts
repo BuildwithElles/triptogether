@@ -3,3 +3,20 @@ export * from './constants';
 export * from './cn';
 export * from './storage';
 export * from './validation';
+
+// Permission exports (avoiding conflicts with auth helpers)
+export {
+  PermissionLevel,
+  type TripRole,
+  type UserPermissions,
+  getUserTripPermissions,
+  hasPermission,
+  requireTripPermission,
+  hasAllPermissions,
+  hasAnyPermission,
+  getUserTripsByRole,
+  isTripCreator,
+  PermissionChecks,
+  usePermissionCheck,
+  withTripPermission
+} from './permissions';

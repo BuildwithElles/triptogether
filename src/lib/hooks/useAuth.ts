@@ -77,7 +77,7 @@ export function useAuth(): UseAuthReturn {
     // For now, we don't have admin roles implemented yet
     // This can be expanded when we add role-based access control
     return false
-  }, [user])
+  }, [])
 
   // Enhanced sign up with name handling
   const signUp = useCallback(async (email: string, password: string, name?: string) => {
@@ -98,6 +98,7 @@ export function useAuth(): UseAuthReturn {
     }
     
     return result
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextSignIn])
 
   // Enhanced sign out with redirect
