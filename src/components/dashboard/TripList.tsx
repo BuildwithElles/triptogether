@@ -115,18 +115,23 @@ export function TripList({
   return (
     <div className={`space-y-8 ${className}`}>
       {/* Header with trip count */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-gray-900">Your Trips</h2>
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg sm:text-xl font-medium text-gray-900">Your Trips</h2>
           <p className="text-sm text-gray-500 mt-1">
             {trips.length} trip{trips.length !== 1 ? 's' : ''} total
           </p>
         </div>
         {showCreateButton && onCreateTrip && (
-          <Button onClick={onCreateTrip} className="hidden sm:inline-flex">
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Create Trip
-          </Button>
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={onCreateTrip} 
+              className="hidden sm:inline-flex min-h-[44px] touch-manipulation"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Create Trip
+            </Button>
+          </div>
         )}
       </div>
 
@@ -147,7 +152,7 @@ export function TripList({
             </div>
             
             {/* Responsive grid layout */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 xs:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {statusTrips.map((trip) => (
                 <TripCard
                   key={trip.id}
@@ -164,8 +169,11 @@ export function TripList({
       {/* Mobile create button */}
       {showCreateButton && onCreateTrip && (
         <div className="sm:hidden">
-          <Button onClick={onCreateTrip} className="w-full">
-            <PlusIcon className="h-4 w-4 mr-2" />
+          <Button 
+            onClick={onCreateTrip} 
+            className="w-full min-h-[48px] touch-manipulation text-base font-medium"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
             Create Trip
           </Button>
         </div>

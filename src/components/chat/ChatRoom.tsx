@@ -178,15 +178,15 @@ export function ChatRoom({ tripId, tripTitle, memberCount }: ChatRoomProps) {
     <Card className="h-full flex flex-col">
       {/* Chat header */}
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">
+        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-4">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <MessageCircle className="h-5 w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-base sm:text-lg truncate">
               {tripTitle ? `${tripTitle} Chat` : 'Trip Chat'}
             </CardTitle>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Online status */}
             <div className="flex items-center gap-1">
               {isOnline ? (
@@ -194,7 +194,7 @@ export function ChatRoom({ tripId, tripTitle, memberCount }: ChatRoomProps) {
               ) : (
                 <WifiOff className="h-4 w-4 text-red-600" />
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground hidden xs:inline">
                 {isOnline ? 'Online' : 'Offline'}
               </span>
             </div>
@@ -244,7 +244,7 @@ export function ChatRoom({ tripId, tripTitle, memberCount }: ChatRoomProps) {
         />
 
         {/* Message input */}
-        <div className="border-t p-4">
+        <div className="border-t p-3 sm:p-4">
           <MessageInput
             onSendMessage={handleSendMessage}
             onSendFile={handleSendFile}

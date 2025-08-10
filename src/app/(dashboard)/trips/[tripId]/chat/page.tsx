@@ -10,7 +10,7 @@ interface ChatPageProps {
 export default function ChatPage({ params }: ChatPageProps) {
   return (
     <ProtectedRoute>
-      <div className="h-[calc(100vh-4rem)] p-4">
+      <div className="h-[calc(100vh-4rem)] lg:h-[calc(100vh-6rem)] p-3 sm:p-4">
         <ChatRoom tripId={params.tripId} />
       </div>
     </ProtectedRoute>

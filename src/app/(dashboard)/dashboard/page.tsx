@@ -75,18 +75,21 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-gray-200 pb-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+      <div className="border-b border-gray-200 pb-4 lg:pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-gray-900 truncate">
               Welcome back, {user?.user_metadata?.name || 'there'}!
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm sm:text-base text-gray-500">
               Plan your next adventure or manage your existing trips
             </p>
           </div>
-          <div className="flex-shrink-0">
-            <Button onClick={handleCreateTrip} className="inline-flex items-center w-full sm:w-auto">
+          <div className="flex-shrink-0 w-full sm:w-auto">
+            <Button 
+              onClick={handleCreateTrip} 
+              className="inline-flex items-center justify-center w-full sm:w-auto min-h-[44px] touch-manipulation"
+            >
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Trip
             </Button>

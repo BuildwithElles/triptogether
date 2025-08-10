@@ -247,16 +247,17 @@ const TripDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-4 space-y-6">
+      <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
         {/* Back button */}
         <div className="flex items-center">
           <Button
             variant="ghost"
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 min-h-[44px] touch-manipulation"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            <span className="hidden xs:inline">Back to Dashboard</span>
+            <span className="xs:hidden">Back</span>
           </Button>
         </div>
 
@@ -267,30 +268,30 @@ const TripDashboard: React.FC = () => {
           onShare={handleShareTrip}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
           {/* Feature Navigation Cards */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <CardContent className="p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
                   Trip Features
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4">
                   {featureCards.map((feature) => (
                     <button
                       key={feature.id}
                       onClick={() => navigateToFeature(feature.path)}
-                      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 text-left transition-all hover:shadow-md hover:border-gray-300"
+                      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 sm:p-5 text-left transition-all hover:shadow-md hover:border-gray-300 touch-manipulation min-h-[80px] active:scale-[0.98]"
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`rounded-lg p-2 ${feature.color} text-white group-hover:scale-110 transition-transform`}>
+                        <div className={`rounded-lg p-2 ${feature.color} text-white group-hover:scale-110 transition-transform flex-shrink-0`}>
                           <feature.icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors text-sm sm:text-base">
                             {feature.title}
                           </h3>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">
                             {feature.description}
                           </p>
                         </div>
@@ -303,7 +304,7 @@ const TripDashboard: React.FC = () => {
           </div>
 
           {/* Members List */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <MembersList
               members={trip.members}
               userRole={trip.userRole}
@@ -316,15 +317,15 @@ const TripDashboard: React.FC = () => {
 
         {/* Invite Modal */}
         {showInviteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-auto">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">Invite Members</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold">Invite Members</h2>
                   <Button
                     variant="ghost"
                     onClick={() => setShowInviteModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] touch-manipulation"
                   >
                     ×
                   </Button>

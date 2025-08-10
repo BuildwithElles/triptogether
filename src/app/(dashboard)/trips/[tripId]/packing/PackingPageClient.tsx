@@ -89,28 +89,29 @@ export function PackingPageClient({ tripId }: PackingPageClientProps) {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-3 sm:p-4 lg:p-6 max-w-4xl">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4 lg:mb-6">
         <Link href={`/trips/${tripId}`}>
-          <Button variant="ghost" className="mb-4">
+          <Button variant="ghost" className="mb-4 min-h-[44px] touch-manipulation">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Trip
+            <span className="hidden xs:inline">Back to Trip</span>
+            <span className="xs:hidden">Back</span>
           </Button>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Package className="w-8 h-8 text-blue-600" />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Packing List</h1>
-            <p className="text-gray-600">
+        <div className="flex flex-col xs:flex-row xs:items-center gap-3">
+          <Package className="w-8 h-8 text-blue-600 flex-shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Packing List</h1>
+            <p className="text-sm sm:text-base text-gray-600">
               Keep track of your personal packing items for this trip
             </p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Add New Item */}
         <Card>
           <CardHeader>

@@ -79,15 +79,15 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onEdit, onShare }) => {
   return (
     <Card className="w-full">
       <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
+            <div className="flex flex-col xs:flex-row xs:items-center gap-2 mb-2">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
                 {trip.title}
               </h1>
               <Badge 
                 variant={getStatusBadgeVariant(trip.status)}
-                className={getStatusColor(trip.status)}
+                className={`${getStatusColor(trip.status)} flex-shrink-0`}
               >
                 {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
               </Badge>
@@ -102,24 +102,26 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onEdit, onShare }) => {
 
           {/* Action buttons - only show for admins */}
           {trip.userRole === 'admin' && (
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex gap-2 flex-shrink-0 w-full xs:w-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onShare}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 flex-1 xs:flex-none min-h-[44px] touch-manipulation"
               >
                 <Share2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Share</span>
+                <span className="sm:hidden">Share</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onEdit}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 flex-1 xs:flex-none min-h-[44px] touch-manipulation"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline">Settings</span>
+                <span className="sm:hidden">Edit</span>
               </Button>
             </div>
           )}
@@ -127,7 +129,7 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onEdit, onShare }) => {
       </CardHeader>
 
       <CardContent className="pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {/* Destination */}
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
