@@ -176,11 +176,35 @@ export function useChat(tripId: string, options: UseChatOptions = {}) {
     };
   }, [tripId, user, enableRealtime]);
 
-  // Create a new message
+  // Create a new message with optimistic updates
   const createMessage = useCallback(async (messageData: CreateMessageData) => {
     if (!user) throw new Error('Authentication required');
 
+    // Create optimistic message
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      trip_id: tripId,
+      user_id: user.id,
+      content: messageData.content,
+      message_type: messageData.message_type || 'text',
+      reply_to: messageData.reply_to || null,
+      attachments: messageData.file_url ? [{ file_url: messageData.file_url }] : [],
+      is_edited: false,
+      edited_at: null,
+      is_pinned: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        id: user.id,
+        email: user.email || ''
+      },
+      reply_to_message: null
+    };
+
     try {
+      // Optimistically add message to local state
+      setAllMessages(prev => [...prev, optimisticMessage]);
+
       const response = await fetch(`/api/trips/${tripId}/chat`, {
         method: 'POST',
         headers: {
@@ -196,12 +220,23 @@ export function useChat(tripId: string, options: UseChatOptions = {}) {
 
       const newMessage = await response.json();
       
-      // Don't add to local state - realtime will handle it
-      // This prevents duplicate messages
+      // Replace optimistic message with real message
+      setAllMessages(prev => 
+        prev.map(msg => 
+          msg.id === optimisticMessage.id ? newMessage : msg
+        )
+      );
+      
       return newMessage;
 
     } catch (error) {
       console.error('Error creating message:', error);
+      
+      // Remove optimistic message on error
+      setAllMessages(prev => 
+        prev.filter(msg => msg.id !== optimisticMessage.id)
+      );
+      
       throw error;
     }
   }, [tripId, user]);

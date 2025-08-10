@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ItineraryItemSkeleton, ListSkeleton } from '@/components/common/SkeletonComponents';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,9 +45,11 @@ export function ItineraryList({ tripId, onEditItem }: ItineraryListProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <LoadingSpinner size="lg" />
-      </div>
+      <ListSkeleton 
+        itemCount={5}
+        renderItem={() => <ItineraryItemSkeleton />}
+        className="space-y-4"
+      />
     );
   }
 

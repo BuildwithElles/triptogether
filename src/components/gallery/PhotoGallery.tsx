@@ -21,6 +21,8 @@ import {
 import { PhotoGrid } from './PhotoGrid';
 import { PhotoUpload } from './PhotoUpload';
 import { useGallery } from '@/lib/hooks/useGallery';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { PhotoSkeleton, ListSkeleton } from '@/components/common/SkeletonComponents';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -293,6 +295,12 @@ export function PhotoGallery({ tripId, className }: PhotoGalleryProps) {
           uploadProgress={uploadProgress}
           disabled={isLoading}
         />
+      ) : isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <PhotoSkeleton key={i} />
+          ))}
+        </div>
       ) : (
         <PhotoGrid
           photos={filteredPhotos}

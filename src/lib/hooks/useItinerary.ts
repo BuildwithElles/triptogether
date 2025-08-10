@@ -76,7 +76,29 @@ export function useItinerary(tripId: string): UseItineraryReturn {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
+    
+    // Create optimistic item
+    const optimisticItem: ItineraryItemWithUser = {
+      id: `temp-${Date.now()}`,
+      trip_id: tripId,
+      title: itemData.title,
+      description: itemData.description || null,
+      start_time: itemData.start_time || null,
+      end_time: itemData.end_time || null,
+      location: itemData.location || null,
+      category: itemData.category || 'Other',
+      created_by: 'temp-user',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     try {
+      // Optimistically update the cache
+      mutateItems((currentItems: ItineraryItemWithUser[] | undefined) => {
+        if (!currentItems) return currentItems;
+        return [optimisticItem, ...currentItems];
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/itinerary`, {
         method: 'POST',
         headers: {
@@ -90,10 +112,14 @@ export function useItinerary(tripId: string): UseItineraryReturn {
         throw new Error(errorData.error || 'Failed to add itinerary item');
       }
 
-      // Revalidate the data
+      // Update with real data from server
       await mutateItems();
     } catch (error) {
       console.error('Error adding itinerary item:', error);
+      
+      // Revert optimistic update on error
+      await mutateItems();
+      
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -105,6 +131,16 @@ export function useItinerary(tripId: string): UseItineraryReturn {
     
     setIsSubmitting(true);
     try {
+      // Optimistically update the cache
+      mutateItems((currentItems: ItineraryItemWithUser[] | undefined) => {
+        if (!currentItems) return currentItems;
+        return currentItems.map(item => 
+          item.id === id 
+            ? { ...item, ...updates, updated_at: new Date().toISOString() }
+            : item
+        );
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/itinerary`, {
         method: 'PUT',
         headers: {
@@ -118,10 +154,14 @@ export function useItinerary(tripId: string): UseItineraryReturn {
         throw new Error(errorData.error || 'Failed to update itinerary item');
       }
 
-      // Revalidate the data
+      // Update with real data from server
       await mutateItems();
     } catch (error) {
       console.error('Error updating itinerary item:', error);
+      
+      // Revert optimistic update on error
+      await mutateItems();
+      
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -133,6 +173,12 @@ export function useItinerary(tripId: string): UseItineraryReturn {
     
     setIsSubmitting(true);
     try {
+      // Optimistically update the cache
+      mutateItems((currentItems: ItineraryItemWithUser[] | undefined) => {
+        if (!currentItems) return currentItems;
+        return currentItems.filter(item => item.id !== id);
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/itinerary?id=${id}`, {
         method: 'DELETE',
       });
@@ -142,10 +188,14 @@ export function useItinerary(tripId: string): UseItineraryReturn {
         throw new Error(errorData.error || 'Failed to delete itinerary item');
       }
 
-      // Revalidate the data
+      // Update with real data from server
       await mutateItems();
     } catch (error) {
       console.error('Error deleting itinerary item:', error);
+      
+      // Revert optimistic update on error
+      await mutateItems();
+      
       throw error;
     } finally {
       setIsSubmitting(false);

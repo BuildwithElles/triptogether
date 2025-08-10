@@ -12,3 +12,4 @@ export * from './checkbox';
 export * from './progress';
 export * from './toast';
 export * from './toaster';
+export * from './loading-button';

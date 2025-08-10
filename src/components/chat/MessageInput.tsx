@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Send, Paperclip, X, Reply } from 'lucide-react';
+import { Send, Paperclip, X, Reply, Loader2 } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (content: string, replyTo?: string) => Promise<void>;
@@ -242,7 +242,11 @@ export function MessageInput({
           className="h-[44px] w-[44px] p-0"
           title="Send message"
         >
-          <Send className="h-4 w-4" />
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </div>
 

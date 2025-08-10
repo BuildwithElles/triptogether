@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Progress } from '@/components/ui/progress'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
+import { PackingItemSkeleton, ListSkeleton } from '@/components/common/SkeletonComponents'
 import { type PackingItem, type PackingStats } from '@/lib/hooks/usePacking'
 
 interface PackingListProps {
@@ -38,6 +39,7 @@ const priorityConfig = {
   low: { label: 'Low', color: 'text-green-600', icon: null },
   medium: { label: 'Medium', color: 'text-yellow-600', icon: null },
   high: { label: 'High', color: 'text-red-600', icon: <Star className="w-3 h-3" /> },
+  essential: { label: 'Essential', color: 'text-purple-600', icon: <Star className="w-3 h-3" /> },
 }
 
 interface PackingItemRowProps {
@@ -77,8 +79,8 @@ function PackingItemRow({ item, onTogglePacked, onDeleteItem, onEditItem }: Pack
     }
   }
 
-  const categoryInfo = categoryConfig[item.category]
-  const priorityInfo = priorityConfig[item.priority]
+  const categoryInfo = categoryConfig[item.category as keyof typeof categoryConfig] || categoryConfig.other
+  const priorityInfo = priorityConfig[item.priority as keyof typeof priorityConfig] || priorityConfig.medium
 
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${item.is_packed ? 'opacity-75' : ''}`}>
@@ -107,8 +109,8 @@ function PackingItemRow({ item, onTogglePacked, onDeleteItem, onEditItem }: Pack
                     {item.quantity}x
                   </Badge>
                 )}
-                {item.priority === 'high' && (
-                  <div className="flex items-center text-red-600">
+                {(item.priority === 'high' || item.priority === 'essential') && (
+                  <div className={`flex items-center ${priorityInfo.color}`}>
                     {priorityInfo.icon}
                   </div>
                 )}
@@ -123,8 +125,8 @@ function PackingItemRow({ item, onTogglePacked, onDeleteItem, onEditItem }: Pack
                 </span>
               </div>
 
-              {item.notes && (
-                <p className="text-sm text-gray-600 truncate">{item.notes}</p>
+              {item.description && (
+                <p className="text-sm text-gray-600 truncate">{item.description}</p>
               )}
             </div>
           </div>
@@ -207,8 +209,18 @@ export function PackingList({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="md" />
+      <div className="space-y-6">
+        {/* Progress skeleton */}
+        <div className="space-y-2">
+          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+          <div className="h-2 w-full bg-gray-200 rounded animate-pulse" />
+        </div>
+        
+        {/* Items skeleton */}
+        <ListSkeleton 
+          itemCount={6}
+          renderItem={() => <PackingItemSkeleton />}
+        />
       </div>
     )
   }
@@ -288,7 +300,7 @@ export function PackingList({
                     return a.is_packed ? 1 : -1
                   }
                   
-                  const priorityOrder = { high: 0, medium: 1, low: 2 }
+                  const priorityOrder = { essential: 0, high: 1, medium: 2, low: 3 }
                   if (a.priority !== b.priority) {
                     return priorityOrder[a.priority] - priorityOrder[b.priority]
                   }

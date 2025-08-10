@@ -1,6 +1,7 @@
 export type { Trip } from '@/components/dashboard/TripList';
 
 import { useState, useEffect, useCallback } from 'react';
+import { mutate } from 'swr';
 import type { Trip } from '@/components/dashboard/TripList';
 
 // API response types
@@ -117,7 +118,7 @@ export function useTrips(status?: string): UseTripsResult {
   };
 }
 
-// Hook for creating trips
+// Hook for creating trips with optimistic updates
 export function useCreateTrip(): UseCreateTripResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +128,32 @@ export function useCreateTrip(): UseCreateTripResult {
       setIsLoading(true);
       setError(null);
 
+      // Create optimistic trip object
+      const optimisticTrip: Trip = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        title: data.title,
+        description: data.description,
+        destination: data.destination,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        memberCount: 1, // Creator starts as the only member
+        status: 'planning'
+      };
+
+      // Optimistically update the trips cache
+      mutate('/api/trips', (currentData: TripsResponse | undefined) => {
+        if (!currentData) return currentData;
+        return {
+          ...currentData,
+          trips: [optimisticTrip, ...currentData.trips],
+          total: currentData.total + 1
+        };
+      }, false); // Don't revalidate immediately
+
       const response = await createTripAPI(data);
+      
+      // Update with real data from server
+      mutate('/api/trips');
       
       return {
         success: true,
@@ -137,6 +163,9 @@ export function useCreateTrip(): UseCreateTripResult {
       console.error('Error creating trip:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create trip';
       setError(errorMessage);
+      
+      // Revert optimistic update on error
+      mutate('/api/trips');
       
       return {
         success: false,

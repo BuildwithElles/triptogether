@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ChatMessageSkeleton, ListSkeleton } from '@/components/common/SkeletonComponents';
 import { 
   MoreVertical, 
   Edit2, 
@@ -376,8 +377,11 @@ export function MessageList({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+        <ListSkeleton 
+          itemCount={8}
+          renderItem={() => <ChatMessageSkeleton />}
+        />
       </div>
     );
   }

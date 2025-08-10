@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
+import { BudgetItemSkeleton, ListSkeleton } from '@/components/common/SkeletonComponents';
 import { useBudget, type BudgetResponse } from '@/lib/hooks/useBudget';
 import { AddExpense } from './AddExpense';
 
@@ -101,9 +102,25 @@ export function BudgetTracker({ tripId }: BudgetTrackerProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner />
-        <span className="ml-2 text-muted-foreground">Loading budget...</span>
+      <div className="space-y-6">
+        {/* Summary cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-2" />
+              <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+        
+        {/* Budget items skeleton */}
+        <div className="space-y-4">
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+          <ListSkeleton 
+            itemCount={4}
+            renderItem={() => <BudgetItemSkeleton />}
+          />
+        </div>
       </div>
     );
   }

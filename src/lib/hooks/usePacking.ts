@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react'
 import useSWR, { mutate } from 'swr'
 import { supabase } from '@/lib/supabase/client'
+import type { PackingItem as DatabasePackingItem } from '@/lib/types/database'
 
 // Types for packing items and API responses
-export interface PackingItem {
-  id: string
-  name: string
-  category: 'clothing' | 'toiletries' | 'electronics' | 'documents' | 'medication' | 'accessories' | 'other'
-  priority: 'low' | 'medium' | 'high'
-  quantity: number
-  is_packed: boolean
-  notes?: string
-  created_at: string
-  updated_at: string
+export interface PackingItem extends DatabasePackingItem {
+  // Add any additional frontend-specific properties if needed
 }
 
 export interface PackingStats {
@@ -29,16 +22,16 @@ export interface PackingData {
 
 export interface CreatePackingItemData {
   name: string
-  category: PackingItem['category']
-  priority?: PackingItem['priority']
+  category: string
+  priority?: 'low' | 'medium' | 'high' | 'essential'
   quantity?: number
   notes?: string
 }
 
 export interface UpdatePackingItemData {
   name?: string
-  category?: PackingItem['category']
-  priority?: PackingItem['priority']
+  category?: string
+  priority?: 'low' | 'medium' | 'high' | 'essential'
   quantity?: number
   notes?: string
   is_packed?: boolean
@@ -99,12 +92,44 @@ export function usePacking(tripId: string) {
     };
   }, [tripId, mutatePacking]);
 
-  // Create a new packing item
+  // Create a new packing item with optimistic updates
   const createPackingItem = async (itemData: CreatePackingItemData): Promise<PackingItem> => {
     setIsLoading(true)
     setError(null)
 
+    // Create optimistic item
+    const optimisticItem: PackingItem = {
+      id: `temp-${Date.now()}`,
+      trip_id: tripId,
+      user_id: 'temp-user',
+      name: itemData.name,
+      description: itemData.notes || null,
+      category: itemData.category,
+      quantity: itemData.quantity || 1,
+      is_packed: false,
+      priority: itemData.priority || 'medium',
+      is_shared: false,
+      shared_with: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     try {
+      // Optimistically update the cache
+      mutatePacking((currentData: PackingData | undefined) => {
+        if (!currentData) return currentData;
+        const newItems = [optimisticItem, ...currentData.items];
+        return {
+          items: newItems,
+          stats: {
+            total: newItems.length,
+            packed: newItems.filter(item => item.is_packed).length,
+            unpacked: newItems.filter(item => !item.is_packed).length,
+            completion: newItems.length > 0 ? (newItems.filter(item => item.is_packed).length / newItems.length) * 100 : 0
+          }
+        };
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/packing`, {
         method: 'POST',
         headers: {
@@ -120,25 +145,48 @@ export function usePacking(tripId: string) {
 
       const { item } = await response.json()
 
-      // Optimistically update the cache
+      // Update with real data from server
       await mutatePacking()
 
       return item
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create packing item'
       setError(errorMessage)
+      
+      // Revert optimistic update on error
+      await mutatePacking()
+      
       throw new Error(errorMessage)
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Update an existing packing item
+  // Update an existing packing item with optimistic updates
   const updatePackingItem = async (itemId: string, updateData: UpdatePackingItemData): Promise<PackingItem> => {
     setIsLoading(true)
     setError(null)
 
     try {
+      // Optimistically update the cache
+      mutatePacking((currentData: PackingData | undefined) => {
+        if (!currentData) return currentData;
+        const updatedItems = currentData.items.map(item => 
+          item.id === itemId 
+            ? { ...item, ...updateData, updated_at: new Date().toISOString() }
+            : item
+        );
+        return {
+          items: updatedItems,
+          stats: {
+            total: updatedItems.length,
+            packed: updatedItems.filter(item => item.is_packed).length,
+            unpacked: updatedItems.filter(item => !item.is_packed).length,
+            completion: updatedItems.length > 0 ? (updatedItems.filter(item => item.is_packed).length / updatedItems.length) * 100 : 0
+          }
+        };
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/packing`, {
         method: 'PUT',
         headers: {
@@ -154,25 +202,44 @@ export function usePacking(tripId: string) {
 
       const { item } = await response.json()
 
-      // Optimistically update the cache
+      // Update with real data from server
       await mutatePacking()
 
       return item
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update packing item'
       setError(errorMessage)
+      
+      // Revert optimistic update on error
+      await mutatePacking()
+      
       throw new Error(errorMessage)
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Delete a packing item
+  // Delete a packing item with optimistic updates
   const deletePackingItem = async (itemId: string): Promise<void> => {
     setIsLoading(true)
     setError(null)
 
     try {
+      // Optimistically update the cache
+      mutatePacking((currentData: PackingData | undefined) => {
+        if (!currentData) return currentData;
+        const filteredItems = currentData.items.filter(item => item.id !== itemId);
+        return {
+          items: filteredItems,
+          stats: {
+            total: filteredItems.length,
+            packed: filteredItems.filter(item => item.is_packed).length,
+            unpacked: filteredItems.filter(item => !item.is_packed).length,
+            completion: filteredItems.length > 0 ? (filteredItems.filter(item => item.is_packed).length / filteredItems.length) * 100 : 0
+          }
+        };
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/packing?itemId=${itemId}`, {
         method: 'DELETE',
       })
@@ -182,11 +249,15 @@ export function usePacking(tripId: string) {
         throw new Error(errorData.error || 'Failed to delete packing item')
       }
 
-      // Optimistically update the cache
+      // Update with real data from server
       await mutatePacking()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete packing item'
       setError(errorMessage)
+      
+      // Revert optimistic update on error
+      await mutatePacking()
+      
       throw new Error(errorMessage)
     } finally {
       setIsLoading(false)

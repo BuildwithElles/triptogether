@@ -134,12 +134,52 @@ export function useBudget(tripId: string) {
     };
   }, [tripId, mutate]);
 
-  // Create a new budget item
+  // Create a new budget item with optimistic updates
   const createBudgetItem = useCallback(async (itemData: CreateBudgetItemData) => {
     if (!tripId) throw new Error('Trip ID is required');
 
     setIsCreating(true);
+    
+    // Create optimistic item
+    const optimisticItem = {
+      id: `temp-${Date.now()}`,
+      trip_id: tripId,
+      title: itemData.title,
+      description: itemData.description || null,
+      amount: itemData.amount,
+      currency: itemData.currency || 'USD',
+      category: itemData.category,
+      paid_by: itemData.paid_by || null,
+      split_type: itemData.split_type || 'equal',
+      is_paid: itemData.is_paid || false,
+      created_by: 'temp-user',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     try {
+      // Optimistically update the cache
+      mutate((currentData: BudgetResponse | undefined) => {
+        if (!currentData) return currentData;
+        const newItems = [optimisticItem, ...currentData.budget_items];
+        const totalBudget = currentData.summary.total_budget + optimisticItem.amount;
+        const paidAmount = optimisticItem.is_paid 
+          ? currentData.summary.paid_amount + optimisticItem.amount
+          : currentData.summary.paid_amount;
+        
+        return {
+          ...currentData,
+          budget_items: newItems,
+          summary: {
+            ...currentData.summary,
+            total_budget: totalBudget,
+            paid_amount: paidAmount,
+            unpaid_amount: totalBudget - paidAmount,
+            per_person_amount: totalBudget / currentData.summary.member_count
+          }
+        };
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/budget`, {
         method: 'POST',
         headers: {
@@ -155,43 +195,54 @@ export function useBudget(tripId: string) {
 
       const newItem = await response.json();
       
-      // Optimistic update - add new item to the list
-      if (data) {
-        const updatedData = {
-          ...data,
-          budget_items: [newItem, ...data.budget_items],
-          summary: {
-            ...data.summary,
-            total_budget: data.summary.total_budget + newItem.amount,
-            unpaid_amount: newItem.is_paid 
-              ? data.summary.unpaid_amount 
-              : data.summary.unpaid_amount + newItem.amount,
-            paid_amount: newItem.is_paid 
-              ? data.summary.paid_amount + newItem.amount 
-              : data.summary.paid_amount,
-            per_person_amount: (data.summary.total_budget + newItem.amount) / data.summary.member_count
-          }
-        };
-        mutate(updatedData, false);
-      }
-
-      // Revalidate to get the actual server state
+      // Update with real data from server
       mutate();
       return newItem;
     } catch (error) {
       console.error('Error creating budget item:', error);
+      
+      // Revert optimistic update on error
+      mutate();
+      
       throw error;
     } finally {
       setIsCreating(false);
     }
-  }, [tripId, data, mutate]);
+  }, [tripId, mutate]);
 
-  // Update a budget item
+  // Update a budget item with optimistic updates
   const updateBudgetItem = useCallback(async (itemId: string, updates: Partial<CreateBudgetItemData>) => {
     if (!tripId) throw new Error('Trip ID is required');
 
     setIsUpdating(true);
     try {
+      // Optimistically update the cache
+      mutate((currentData: BudgetResponse | undefined) => {
+        if (!currentData) return currentData;
+        
+        const updatedItems = currentData.budget_items.map(item => 
+          item.id === itemId 
+            ? { ...item, ...updates, updated_at: new Date().toISOString() }
+            : item
+        );
+        
+        // Recalculate summary
+        const totalBudget = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+        const paidAmount = updatedItems.filter(item => item.is_paid).reduce((sum, item) => sum + item.amount, 0);
+        
+        return {
+          ...currentData,
+          budget_items: updatedItems,
+          summary: {
+            ...currentData.summary,
+            total_budget: totalBudget,
+            paid_amount: paidAmount,
+            unpaid_amount: totalBudget - paidAmount,
+            per_person_amount: totalBudget / currentData.summary.member_count
+          }
+        };
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/budget/${itemId}`, {
         method: 'PUT',
         headers: {
@@ -207,47 +258,55 @@ export function useBudget(tripId: string) {
 
       const updatedItem = await response.json();
       
-      // Optimistic update - update item in the list
-      if (data) {
-        const updatedItems = data.budget_items.map(item => 
-          item.id === itemId ? updatedItem : item
-        );
-        
-        // Recalculate summary
-        const totalBudget = updatedItems.reduce((sum, item) => sum + item.amount, 0);
-        const paidAmount = updatedItems.filter(item => item.is_paid).reduce((sum, item) => sum + item.amount, 0);
-        
-        const updatedData = {
-          ...data,
-          budget_items: updatedItems,
-          summary: {
-            ...data.summary,
-            total_budget: totalBudget,
-            paid_amount: paidAmount,
-            unpaid_amount: totalBudget - paidAmount,
-            per_person_amount: totalBudget / data.summary.member_count
-          }
-        };
-        mutate(updatedData, false);
-      }
-
-      // Revalidate to get the actual server state
+      // Update with real data from server
       mutate();
       return updatedItem;
     } catch (error) {
       console.error('Error updating budget item:', error);
+      
+      // Revert optimistic update on error
+      mutate();
+      
       throw error;
     } finally {
       setIsUpdating(false);
     }
-  }, [tripId, data, mutate]);
+  }, [tripId, mutate]);
 
-  // Delete a budget item
+  // Delete a budget item with optimistic updates
   const deleteBudgetItem = useCallback(async (itemId: string) => {
     if (!tripId) throw new Error('Trip ID is required');
 
     setIsDeleting(true);
     try {
+      // Optimistically update the cache
+      mutate((currentData: BudgetResponse | undefined) => {
+        if (!currentData) return currentData;
+        
+        const itemToDelete = currentData.budget_items.find(item => item.id === itemId);
+        const updatedItems = currentData.budget_items.filter(item => item.id !== itemId);
+        
+        if (itemToDelete) {
+          const totalBudget = currentData.summary.total_budget - itemToDelete.amount;
+          const paidAmount = itemToDelete.is_paid 
+            ? currentData.summary.paid_amount - itemToDelete.amount
+            : currentData.summary.paid_amount;
+          
+          return {
+            ...currentData,
+            budget_items: updatedItems,
+            summary: {
+              ...currentData.summary,
+              total_budget: totalBudget,
+              paid_amount: paidAmount,
+              unpaid_amount: totalBudget - paidAmount,
+              per_person_amount: currentData.summary.member_count > 0 ? totalBudget / currentData.summary.member_count : 0
+            }
+          };
+        }
+        return currentData;
+      }, false);
+
       const response = await fetch(`/api/trips/${tripId}/budget/${itemId}`, {
         method: 'DELETE',
       });
@@ -257,40 +316,19 @@ export function useBudget(tripId: string) {
         throw new Error(error.error || 'Failed to delete budget item');
       }
 
-      // Optimistic update - remove item from the list
-      if (data) {
-        const itemToDelete = data.budget_items.find(item => item.id === itemId);
-        const updatedItems = data.budget_items.filter(item => item.id !== itemId);
-        
-        if (itemToDelete) {
-          const updatedData = {
-            ...data,
-            budget_items: updatedItems,
-            summary: {
-              ...data.summary,
-              total_budget: data.summary.total_budget - itemToDelete.amount,
-              unpaid_amount: itemToDelete.is_paid 
-                ? data.summary.unpaid_amount 
-                : data.summary.unpaid_amount - itemToDelete.amount,
-              paid_amount: itemToDelete.is_paid 
-                ? data.summary.paid_amount - itemToDelete.amount 
-                : data.summary.paid_amount,
-              per_person_amount: (data.summary.total_budget - itemToDelete.amount) / data.summary.member_count
-            }
-          };
-          mutate(updatedData, false);
-        }
-      }
-
-      // Revalidate to get the actual server state
+      // Update with real data from server
       mutate();
     } catch (error) {
       console.error('Error deleting budget item:', error);
+      
+      // Revert optimistic update on error
+      mutate();
+      
       throw error;
     } finally {
       setIsDeleting(false);
     }
-  }, [tripId, data, mutate]);
+  }, [tripId, mutate]);
 
   // Toggle paid status of a budget item
   const togglePaidStatus = useCallback(async (itemId: string, isPaid: boolean) => {
