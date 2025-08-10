@@ -31,3 +31,7 @@ export {
 export {
   useChat,
 } from './useChat'
+
+export {
+  useOutfits,
+} from './useOutfits'
