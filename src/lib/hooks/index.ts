@@ -12,3 +12,9 @@ export {
   useTrips,
   useCreateTrip,
 } from './useTrips'
+
+export {
+  useItinerary,
+  ITINERARY_CATEGORIES_LIST,
+  type ItineraryCategory,
+} from './useItinerary'

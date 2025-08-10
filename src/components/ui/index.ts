@@ -6,3 +6,5 @@ export * from './badge';
 export * from './switch';
 export * from './label';
 export * from './textarea';
+export * from './select';
+export * from './dropdown-menu';
