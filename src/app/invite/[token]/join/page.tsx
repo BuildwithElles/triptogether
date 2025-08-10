@@ -112,7 +112,7 @@ export default function InviteJoinPage({ params }: InviteJoinPageProps) {
         errorCode: 'NETWORK_ERROR',
       });
     }
-  }, [token, router, startRedirectCountdown]);
+  }, [token, startRedirectCountdown]);
 
   // Check authentication and handle join flow
   useEffect(() => {

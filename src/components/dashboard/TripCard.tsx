@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, MapPinIcon, UsersIcon, ArrowRightIcon } from 'lucide-react';
@@ -23,7 +23,7 @@ interface TripCardProps {
   className?: string;
 }
 
-export function TripCard({ trip, onClick, className }: TripCardProps) {
+const TripCard = memo(function TripCard({ trip, onClick, className }: TripCardProps) {
   const handleClick = () => {
     onClick?.(trip.id);
   };
@@ -146,4 +146,6 @@ export function TripCard({ trip, onClick, className }: TripCardProps) {
       </CardFooter>
     </Card>
   );
-}
+});
+
+export { TripCard };

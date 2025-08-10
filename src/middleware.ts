@@ -32,6 +32,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Add performance and security headers
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block')
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  
+  // Cache control for static assets
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    supabaseResponse.headers.set('Cache-Control', 'no-store, max-age=0')
+  } else if (request.nextUrl.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+    supabaseResponse.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+  }
+
   // Get the pathname
   const url = request.nextUrl.clone()
   const pathname = url.pathname
