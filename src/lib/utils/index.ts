@@ -4,6 +4,7 @@ export * from './cn';
 export * from './storage';
 export * from './validation';
 export * from './invite';
+export * from './error-tracking';
 
 // Permission exports (avoiding conflicts with auth helpers)
 export {
