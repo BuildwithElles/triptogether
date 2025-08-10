@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR, { mutate } from 'swr'
+import { supabase } from '@/lib/supabase/client'
 
 // Types for packing items and API responses
 export interface PackingItem {
@@ -71,6 +72,32 @@ export function usePacking(tripId: string) {
       dedupingInterval: 5000,
     }
   )
+
+  // Set up realtime subscription for packing items
+  useEffect(() => {
+    if (!tripId) return;
+
+    const channel = supabase
+      .channel(`packing-${tripId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'packing_items',
+          filter: `trip_id=eq.${tripId}`,
+        },
+        (payload) => {
+          // Revalidate data when any change occurs
+          mutatePacking();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId, mutatePacking]);
 
   // Create a new packing item
   const createPackingItem = async (itemData: CreatePackingItemData): Promise<PackingItem> => {

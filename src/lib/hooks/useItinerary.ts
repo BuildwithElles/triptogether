@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import useSWR, { mutate } from 'swr';
+import { supabase } from '@/lib/supabase/client';
 import { ItineraryItem, ItineraryItemInsert, ItineraryItemUpdate } from '@/lib/types/database';
 
 interface ItineraryItemWithUser extends ItineraryItem {
@@ -44,6 +45,32 @@ export function useItinerary(tripId: string): UseItineraryReturn {
       revalidateOnReconnect: true,
     }
   );
+
+  // Set up realtime subscription for itinerary items
+  useEffect(() => {
+    if (!tripId) return;
+
+    const channel = supabase
+      .channel(`itinerary-${tripId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'itinerary_items',
+          filter: `trip_id=eq.${tripId}`,
+        },
+        (payload) => {
+          // Revalidate data when any change occurs
+          mutateItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId, mutateItems]);
 
   const addItem = useCallback(async (itemData: Omit<ItineraryItemInsert, 'trip_id' | 'created_by'>) => {
     if (isSubmitting) return;

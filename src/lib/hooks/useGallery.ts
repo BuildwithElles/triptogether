@@ -3,8 +3,9 @@
  * Provides functionality for uploading, viewing, and managing photos
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
+import { supabase } from '@/lib/supabase/client';
 import { Photo, PhotoInsert } from '../types/database';
 import { useAuth } from './useAuth';
 
@@ -41,6 +42,32 @@ export function useGallery({ tripId, album }: UseGalleryOptions) {
     isLoading,
     mutate,
   } = useSWR<PhotoWithUploader[]>(apiUrl);
+
+  // Set up realtime subscription for photos
+  useEffect(() => {
+    if (!tripId) return;
+
+    const channel = supabase
+      .channel(`photos-${tripId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'photos',
+          filter: `trip_id=eq.${tripId}`,
+        },
+        (payload) => {
+          // Revalidate data when any change occurs
+          mutate();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId, mutate]);
 
   /**
    * Upload multiple photos

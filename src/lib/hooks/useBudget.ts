@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
+import { supabase } from '@/lib/supabase/client';
 import type { BudgetItem, BudgetSplit } from '@/lib/types/database';
 
 // Types for budget API responses
@@ -92,6 +93,46 @@ export function useBudget(tripId: string) {
       dedupingInterval: 5000, // 5 seconds
     }
   );
+
+  // Set up realtime subscription for budget items and splits
+  useEffect(() => {
+    if (!tripId) return;
+
+    const channel = supabase
+      .channel(`budget-${tripId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'budget_items',
+          filter: `trip_id=eq.${tripId}`,
+        },
+        (payload) => {
+          // Revalidate data when budget items change
+          mutate();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'budget_splits',
+        },
+        (payload) => {
+          // Revalidate data when budget splits change
+          // Note: We listen to all budget_splits changes since filtering by trip_id
+          // would require a more complex filter through budget_items
+          mutate();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId, mutate]);
 
   // Create a new budget item
   const createBudgetItem = useCallback(async (itemData: CreateBudgetItemData) => {
