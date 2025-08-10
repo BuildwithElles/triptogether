@@ -47,9 +47,29 @@ export function MessageInput({
     return emailName.charAt(0).toUpperCase() + emailName.slice(1);
   }, []);
 
+  // Validate message content
+  const validateMessage = useCallback((messageContent: string): { isValid: boolean; error?: string } => {
+    if (!messageContent.trim() && !selectedFile) {
+      return { isValid: false, error: 'Message cannot be empty' };
+    }
+    
+    if (messageContent.length > maxLength) {
+      return { isValid: false, error: `Message too long (${messageContent.length}/${maxLength} characters)` };
+    }
+    
+    return { isValid: true };
+  }, [maxLength, selectedFile]);
+
   // Handle sending message
   const handleSend = useCallback(async () => {
-    if ((!content.trim() && !selectedFile) || isLoading) return;
+    if (isLoading) return;
+
+    const validation = validateMessage(content);
+    if (!validation.isValid) {
+      // Show validation error - could be enhanced with toast notifications
+      console.warn('Message validation failed:', validation.error);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -76,7 +96,7 @@ export function MessageInput({
     } finally {
       setIsLoading(false);
     }
-  }, [content, selectedFile, isLoading, onSendMessage, onSendFile, replyingTo?.id, onCancelReply]);
+  }, [content, selectedFile, isLoading, onSendMessage, onSendFile, replyingTo?.id, onCancelReply, validateMessage]);
 
   // Handle Enter key press
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {

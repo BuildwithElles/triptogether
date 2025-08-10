@@ -43,11 +43,11 @@ export const signupSchema = z.object({
   path: ["confirmPassword"],
 })
 
-// Trip validation schemas (for future use)
+// Trip validation schemas
 export const tripTitleSchema = z
   .string()
   .min(3, 'Trip title must be at least 3 characters long')
-  .max(100, 'Trip title must be less than 100 characters')
+  .max(200, 'Trip title must be less than 200 characters')
 
 export const tripDescriptionSchema = z
   .string()
@@ -57,7 +57,132 @@ export const tripDescriptionSchema = z
 export const tripDestinationSchema = z
   .string()
   .min(2, 'Destination must be at least 2 characters long')
-  .max(100, 'Destination must be less than 100 characters')
+  .max(200, 'Destination must be less than 200 characters')
+
+// Trip creation form validation schema
+export const createTripSchema = z.object({
+  title: tripTitleSchema,
+  description: tripDescriptionSchema,
+  destination: tripDestinationSchema,
+  startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().min(1, 'End date is required'),
+  budgetTotal: z.string().optional(),
+  maxMembers: z.string().optional(),
+  isPublic: z.boolean(),
+}).refine((data) => {
+  if (data.startDate && data.endDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    return endDate >= startDate;
+  }
+  return true;
+}, {
+  message: 'End date must be after or equal to start date',
+  path: ['endDate'],
+}).refine((data) => {
+  if (data.budgetTotal && data.budgetTotal.trim()) {
+    const budget = Number(data.budgetTotal);
+    return !isNaN(budget) && budget >= 0;
+  }
+  return true;
+}, {
+  message: 'Budget must be a positive number',
+  path: ['budgetTotal'],
+}).refine((data) => {
+  if (data.maxMembers && data.maxMembers.trim()) {
+    const maxMembers = Number(data.maxMembers);
+    return !isNaN(maxMembers) && maxMembers >= 1 && maxMembers <= 100;
+  }
+  return true;
+}, {
+  message: 'Max members must be between 1 and 100',
+  path: ['maxMembers'],
+})
+
+// Itinerary validation schemas
+export const itineraryItemSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
+  description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
+  location: z.string().max(255, 'Location must be less than 255 characters').optional(),
+  start_time: z.string().optional(),
+  end_time: z.string().optional(),
+  category: z.string().min(1, 'Category is required'),
+}).refine((data) => {
+  if (data.start_time && data.end_time) {
+    const start = new Date(data.start_time);
+    const end = new Date(data.end_time);
+    return end > start;
+  }
+  return true;
+}, {
+  message: 'End time must be after start time',
+  path: ['end_time'],
+})
+
+// Budget/Expense validation schemas
+export const expenseSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title must be under 100 characters'),
+  amount: z.number().min(0.01, 'Amount must be greater than 0').max(999999.99, 'Amount is too large'),
+  currency: z.string().length(3, 'Currency must be 3 characters'),
+  category: z.string().min(1, 'Category is required'),
+  split_type: z.enum(['equal', 'custom', 'percentage']),
+  is_paid: z.boolean(),
+  description: z.string().max(500, 'Description must be under 500 characters').optional(),
+  paid_by: z.string().optional(),
+})
+
+// Packing list validation schemas
+export const packingItemSchema = z.object({
+  name: z.string().min(1, 'Item name is required').max(255, 'Item name too long'),
+  category: z.enum(['clothing', 'toiletries', 'electronics', 'documents', 'medication', 'accessories', 'other']),
+  priority: z.enum(['low', 'medium', 'high']),
+  quantity: z.number().int().min(1, 'Quantity must be at least 1').max(999, 'Quantity too large'),
+  notes: z.string().max(500, 'Notes too long').optional(),
+})
+
+// Chat message validation schemas
+export const messageSchema = z.object({
+  content: z.string().min(1, 'Message cannot be empty').max(2000, 'Message too long'),
+  replyTo: z.string().optional(),
+})
+
+// Outfit validation schemas
+export const clothingItemSchema = z.object({
+  name: z.string().min(1, 'Item name is required').max(100, 'Item name too long'),
+  type: z.enum(['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory']),
+  color: z.string().max(50, 'Color name too long').optional(),
+  brand: z.string().max(100, 'Brand name too long').optional(),
+  notes: z.string().max(200, 'Notes too long').optional(),
+})
+
+export const outfitSchema = z.object({
+  name: z.string().min(1, 'Outfit name is required').max(100, 'Outfit name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+  occasion: z.string().min(1, 'Occasion is required'),
+  weather: z.string().optional(),
+  date_planned: z.string().optional(),
+  image_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  clothing_items: z.array(clothingItemSchema).optional(),
+})
+
+// Photo/Gallery validation schemas
+export const photoUploadSchema = z.object({
+  caption: z.string().max(500, 'Caption too long').optional(),
+  album: z.string().max(100, 'Album name too long').optional(),
+})
+
+// File validation schema
+export const fileValidationSchema = z.object({
+  size: z.number().max(10 * 1024 * 1024, 'File size must be less than 10MB'),
+  type: z.string().refine((type) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'application/pdf', 'text/plain', 
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    return allowedTypes.includes(type);
+  }, 'File type not supported'),
+})
 
 // Reset password validation schema
 export const resetPasswordSchema = z.object({
@@ -86,6 +211,15 @@ export type SignupFormData = z.infer<typeof signupSchema>
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>
+export type CreateTripFormData = z.infer<typeof createTripSchema>
+export type ItineraryItemFormData = z.infer<typeof itineraryItemSchema>
+export type ExpenseFormData = z.infer<typeof expenseSchema>
+export type PackingItemFormData = z.infer<typeof packingItemSchema>
+export type MessageFormData = z.infer<typeof messageSchema>
+export type ClothingItemFormData = z.infer<typeof clothingItemSchema>
+export type OutfitFormData = z.infer<typeof outfitSchema>
+export type PhotoUploadFormData = z.infer<typeof photoUploadSchema>
+export type FileValidationData = z.infer<typeof fileValidationSchema>
 
 // Validation helper functions
 export function validateEmail(email: string): { isValid: boolean; error?: string } {

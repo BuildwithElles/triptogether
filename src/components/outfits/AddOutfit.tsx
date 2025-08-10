@@ -6,8 +6,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useOutfits } from '@/lib/hooks/useOutfits';
 import { ClothingItem } from '@/lib/types/database';
+import { outfitSchema, clothingItemSchema, type OutfitFormData, type ClothingItemFormData } from '@/lib/utils/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, X, Shirt } from 'lucide-react';
+import { Plus, X, Shirt, AlertCircle } from 'lucide-react';
 
 interface AddOutfitProps {
   tripId: string;
@@ -60,74 +63,80 @@ const CLOTHING_TYPES = [
 ] as const;
 
 export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    occasion: 'casual',
-    weather: '',
-    date_planned: initialDate || '',
-    image_url: ''
-  });
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
-  const [newItem, setNewItem] = useState({
-    name: '',
-    type: 'top' as const,
-    color: '',
-    brand: '',
-    notes: ''
-  });
-
+  const [newItemError, setNewItemError] = useState<string>('');
   const { createOutfit } = useOutfits({ tripId });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name.trim()) {
-      alert('Please enter an outfit name');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<OutfitFormData>({
+    resolver: zodResolver(outfitSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      occasion: 'casual',
+      weather: '',
+      date_planned: initialDate || '',
+      image_url: '',
+      clothing_items: [],
+    },
+  });
 
-    setIsSubmitting(true);
-
-    try {
-      await createOutfit({
-        ...formData,
-        clothing_items: clothingItems,
-        date_planned: formData.date_planned || undefined
-      });
-      onClose();
-    } catch (error) {
-      console.error('Failed to create outfit:', error);
-      alert('Failed to create outfit. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const addClothingItem = () => {
-    if (!newItem.name.trim()) {
-      alert('Please enter an item name');
-      return;
-    }
-
-    const item: ClothingItem = {
-      id: `item-${Date.now()}`,
-      name: newItem.name.trim(),
-      type: newItem.type,
-      color: newItem.color.trim(),
-      brand: newItem.brand.trim() || undefined,
-      notes: newItem.notes.trim() || undefined
-    };
-
-    setClothingItems(prev => [...prev, item]);
-    setNewItem({
+  const {
+    register: registerItem,
+    handleSubmit: handleSubmitItem,
+    reset: resetItem,
+    formState: { errors: itemErrors },
+  } = useForm<ClothingItemFormData>({
+    resolver: zodResolver(clothingItemSchema),
+    defaultValues: {
       name: '',
       type: 'top',
       color: '',
       brand: '',
-      notes: ''
-    });
+      notes: '',
+    },
+  });
+
+  const watchedOccasion = watch('occasion');
+  const watchedWeather = watch('weather');
+
+  const onSubmit = async (data: OutfitFormData) => {
+    try {
+      await createOutfit({
+        ...data,
+        clothing_items: clothingItems,
+        date_planned: data.date_planned || undefined
+      });
+      onClose();
+    } catch (error) {
+      console.error('Failed to create outfit:', error);
+      // Error handling could be enhanced with toast notifications
+    }
+  };
+
+  const addClothingItem = (itemData: ClothingItemFormData) => {
+    try {
+      setNewItemError('');
+      
+      const item: ClothingItem = {
+        id: `item-${Date.now()}`,
+        name: itemData.name.trim(),
+        type: itemData.type,
+        color: itemData.color?.trim() || '',
+        brand: itemData.brand?.trim() || undefined,
+        notes: itemData.notes?.trim() || undefined
+      };
+
+      setClothingItems(prev => [...prev, item]);
+      resetItem();
+    } catch (error) {
+      setNewItemError('Failed to add clothing item');
+    }
   };
 
   const removeClothingItem = (itemId: string) => {
@@ -144,27 +153,34 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Outfit Name *</Label>
               <Input
                 id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                {...register('name')}
                 placeholder="e.g., Dinner at fancy restaurant"
-                required
+                disabled={isSubmitting}
+                className={errors.name ? 'border-red-500' : ''}
               />
+              {errors.name && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="occasion">Occasion</Label>
               <Select 
-                value={formData.occasion} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, occasion: value }))}
+                value={watchedOccasion} 
+                onValueChange={(value) => setValue('occasion', value)}
+                disabled={isSubmitting}
               >
-                <SelectTrigger>
+                <SelectTrigger className={errors.occasion ? 'border-red-500' : ''}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,6 +191,12 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.occasion && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.occasion.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -182,10 +204,11 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
             <div className="space-y-2">
               <Label htmlFor="weather">Weather</Label>
               <Select 
-                value={formData.weather} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, weather: value }))}
+                value={watchedWeather} 
+                onValueChange={(value) => setValue('weather', value)}
+                disabled={isSubmitting}
               >
-                <SelectTrigger>
+                <SelectTrigger className={errors.weather ? 'border-red-500' : ''}>
                   <SelectValue placeholder="Select weather condition" />
                 </SelectTrigger>
                 <SelectContent>
@@ -196,6 +219,12 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.weather && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.weather.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -203,9 +232,16 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
               <Input
                 id="date_planned"
                 type="date"
-                value={formData.date_planned}
-                onChange={(e) => setFormData(prev => ({ ...prev, date_planned: e.target.value }))}
+                {...register('date_planned')}
+                disabled={isSubmitting}
+                className={errors.date_planned ? 'border-red-500' : ''}
               />
+              {errors.date_planned && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.date_planned.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -213,11 +249,18 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              {...register('description')}
               placeholder="Describe the outfit or occasion..."
               rows={3}
+              disabled={isSubmitting}
+              className={errors.description ? 'border-red-500' : ''}
             />
+            {errors.description && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -225,10 +268,17 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
             <Input
               id="image_url"
               type="url"
-              value={formData.image_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+              {...register('image_url')}
               placeholder="https://example.com/outfit-image.jpg"
+              disabled={isSubmitting}
+              className={errors.image_url ? 'border-red-500' : ''}
             />
+            {errors.image_url && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.image_url.message}
+              </p>
+            )}
           </div>
 
           {/* Clothing Items */}
@@ -241,51 +291,89 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
             {/* Add New Item Form */}
             <Card>
               <CardContent className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                  <Input
-                    placeholder="Item name"
-                    value={newItem.name}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                  <Select 
-                    value={newItem.type} 
-                    onValueChange={(value: any) => setNewItem(prev => ({ ...prev, type: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CLOTHING_TYPES.map(type => (
-                        <SelectItem key={type} value={type}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    placeholder="Color"
-                    value={newItem.color}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, color: e.target.value }))}
-                  />
-                </div>
+                {newItemError && (
+                  <div className="mb-3 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {newItemError}
+                  </div>
+                )}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                  <Input
-                    placeholder="Brand (optional)"
-                    value={newItem.brand}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, brand: e.target.value }))}
-                  />
-                  <Input
-                    placeholder="Notes (optional)"
-                    value={newItem.notes}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, notes: e.target.value }))}
-                  />
-                </div>
-                
-                <Button type="button" onClick={addClothingItem} size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Item
-                </Button>
+                <form onSubmit={handleSubmitItem(addClothingItem)} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Input
+                        placeholder="Item name"
+                        {...registerItem('name')}
+                        className={itemErrors.name ? 'border-red-500' : ''}
+                      />
+                      {itemErrors.name && (
+                        <p className="text-xs text-red-600 mt-1">{itemErrors.name.message}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <input type="hidden" {...registerItem('type')} />
+                      <Select 
+                        defaultValue="top"
+                        onValueChange={(value: any) => registerItem('type').onChange({ target: { value } })}
+                      >
+                        <SelectTrigger className={itemErrors.type ? 'border-red-500' : ''}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CLOTHING_TYPES.map(type => (
+                            <SelectItem key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {itemErrors.type && (
+                        <p className="text-xs text-red-600 mt-1">{itemErrors.type.message}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Input
+                        placeholder="Color"
+                        {...registerItem('color')}
+                        className={itemErrors.color ? 'border-red-500' : ''}
+                      />
+                      {itemErrors.color && (
+                        <p className="text-xs text-red-600 mt-1">{itemErrors.color.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Input
+                        placeholder="Brand (optional)"
+                        {...registerItem('brand')}
+                        className={itemErrors.brand ? 'border-red-500' : ''}
+                      />
+                      {itemErrors.brand && (
+                        <p className="text-xs text-red-600 mt-1">{itemErrors.brand.message}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Input
+                        placeholder="Notes (optional)"
+                        {...registerItem('notes')}
+                        className={itemErrors.notes ? 'border-red-500' : ''}
+                      />
+                      {itemErrors.notes && (
+                        <p className="text-xs text-red-600 mt-1">{itemErrors.notes.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Button type="submit" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
+                </form>
               </CardContent>
             </Card>
 
@@ -323,7 +411,7 @@ export function AddOutfit({ tripId, onClose, initialDate }: AddOutfitProps) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
