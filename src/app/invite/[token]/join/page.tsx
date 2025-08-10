@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,25 +52,22 @@ export default function InviteJoinPage({ params }: InviteJoinPageProps) {
   // Auto-redirect counter for success state
   const [redirectCountdown, setRedirectCountdown] = useState(5);
 
-  // Check authentication and handle join flow
-  useEffect(() => {
-    if (authLoading) {
-      return; // Wait for auth to load
-    }
+  // Start countdown for auto-redirect
+  const startRedirectCountdown = useCallback((redirectUrl: string) => {
+    let countdown = 5;
+    const interval = setInterval(() => {
+      countdown -= 1;
+      setRedirectCountdown(countdown);
 
-    if (!user) {
-      // User not authenticated, redirect to login with return URL
-      const loginUrl = `/login?redirectTo=${encodeURIComponent(`/invite/${token}/join`)}`;
-      router.replace(loginUrl);
-      return;
-    }
-
-    // User is authenticated, proceed with join
-    handleJoinTrip();
-  }, [user, authLoading, token, router]);
+      if (countdown <= 0) {
+        clearInterval(interval);
+        router.replace(redirectUrl);
+      }
+    }, 1000);
+  }, [router]);
 
   // Handle the trip joining process
-  const handleJoinTrip = async () => {
+  const handleJoinTrip = useCallback(async () => {
     try {
       setJoinState({
         status: 'joining',
@@ -115,21 +112,24 @@ export default function InviteJoinPage({ params }: InviteJoinPageProps) {
         errorCode: 'NETWORK_ERROR',
       });
     }
-  };
+  }, [token, router, startRedirectCountdown]);
 
-  // Start countdown for auto-redirect
-  const startRedirectCountdown = (redirectUrl: string) => {
-    let countdown = 5;
-    const interval = setInterval(() => {
-      countdown -= 1;
-      setRedirectCountdown(countdown);
-      
-      if (countdown <= 0) {
-        clearInterval(interval);
-        router.replace(redirectUrl);
-      }
-    }, 1000);
-  };
+  // Check authentication and handle join flow
+  useEffect(() => {
+    if (authLoading) {
+      return; // Wait for auth to load
+    }
+
+    if (!user) {
+      // User not authenticated, redirect to login with return URL
+      const loginUrl = `/login?redirectTo=${encodeURIComponent(`/invite/${token}/join`)}`;
+      router.replace(loginUrl);
+      return;
+    }
+
+    // User is authenticated, proceed with join
+    handleJoinTrip();
+  }, [user, authLoading, token, router, handleJoinTrip]);
 
   // Manual redirect handler
   const handleManualRedirect = () => {

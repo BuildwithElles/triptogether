@@ -27,3 +27,7 @@ export {
   type UpdateBudgetItemData,
   type TripMember,
 } from './useBudget'
+
+export {
+  useChat,
+} from './useChat'
