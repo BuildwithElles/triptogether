@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Budget Management', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to budget page (assumes user is logged in and has access to a trip)
-    await page.goto('/dashboard');
+    // Start from home page and navigate through proper flow
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
     // Try to navigate to first available trip's budget
     const tripCard = page.getByTestId('trip-card').first();

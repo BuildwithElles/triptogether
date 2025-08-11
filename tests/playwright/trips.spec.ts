@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Trip Management Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to dashboard (assumes user is logged in)
-    await page.goto('/dashboard');
+    // Start from home page
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display dashboard with trip creation option', async ({ page }) => {

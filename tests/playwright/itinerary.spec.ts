@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Itinerary Management', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to itinerary page (assumes user is logged in and has access to a trip)
-    await page.goto('/dashboard');
-    
+    // Start from home page
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
     // Try to navigate to first available trip's itinerary
     const tripCard = page.getByTestId('trip-card').first();
     if (await tripCard.isVisible()) {

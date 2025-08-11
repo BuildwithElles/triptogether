@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Start from the login page
-    await page.goto('/auth/login');
+    // Navigate to login page
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display login form correctly', async ({ page }) => {

@@ -52,6 +52,7 @@
     "zod": "^4.0.16"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.54.2",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",

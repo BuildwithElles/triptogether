@@ -86,6 +86,12 @@ test.describe('Core User Flows', () => {
     }
   });
 
+  test.beforeEach(async ({ page }) => {
+    // Start from home page
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
+
   test('error handling and 404 pages', async ({ page }) => {
     // Test 404 handling
     await page.goto('/non-existent-page');
